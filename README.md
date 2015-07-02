@@ -6,9 +6,10 @@ Maps PostgreSQL notification system to uWSGI signal framework
 Installation
 ============
 
+the plugin is 2.x friendly
+
 ```
-git clone https://github.com/unbit/uwsgi-pgnotify
-uwsgi --buid-plugin uwsgi-pgnotify
+uwsgi --buid-plugin https://github.com/unbit/uwsgi-pgnotify
 ```
 
 Configuration
