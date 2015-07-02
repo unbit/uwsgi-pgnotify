@@ -3,8 +3,6 @@
 
 extern struct uwsgi_server uwsgi;
 
-void pgnotify_loop(void);
-
 struct uwsgi_pgnotify_connection {
 	char *conn_string;
 	char *channel;
@@ -79,7 +77,12 @@ static int uwsgi_pgnotify_connect(struct uwsgi_pgnotify_connection *upc) {
 	return upc->fd;
 }
 
-void pgnotify_loop() {
+static void *pgnotify_loop(void *foobar) {
+	// block all signals
+        sigset_t smask;
+        sigfillset(&smask);
+        pthread_sigmask(SIG_BLOCK, &smask, NULL);
+
 	struct uwsgi_string_list *usl = NULL;
 	int queue = event_queue_init();
 
@@ -135,10 +138,17 @@ void pgnotify_loop() {
 			PQfreemem(notify);
 		}	
 	}
+	return NULL;
+}
+
+static void pgnotify_spawn_thread() {
+	pthread_t t;
+	pthread_create(&t, NULL, pgnotify_loop, NULL);
 }
 
 struct uwsgi_plugin pgnotify_plugin = {
 	.name = "pgnotify",
 	.options = pgnotify_options,
 	.init = pgnotify_init,
+	.postinit_apps = pgnotify_spawn_thread,
 };
